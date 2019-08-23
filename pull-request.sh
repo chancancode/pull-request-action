@@ -44,15 +44,22 @@ check_events_json() {
 
 create_pull_request() {
 
-    SOURCE="${1}"  # from this branch
-    TARGET="${2}"  # pull request TO this target
-    BODY="${3}"    # this is the content of the message
-    TITLE="${4}"   # pull request title
-    DRAFT="${5}"   # if PRs are draft
+    # JSON strings
+    SOURCE="$(echo "${1}" | jq --raw-input --slurp)"  # from this branch
+    TARGET="$(echo "${2}" | jq --raw-input --slurp)"  # pull request TO this target
+    BODY="$(echo "${3}" | jq --raw-input --slurp)"    # this is the content of the message
+    TITLE="$(echo "${4}" | jq --raw-input --slurp)"   # pull request title
+    
+    # JSON boolean
+    if [[ "${5}" ==  "true" ]]; then                  # if PRs are draft
+      DRAFT="true";
+    else
+      DRAFT="false";
+    fi
 
     # Check if the branch already has a pull request open 
 
-    DATA="{\"base\":\"${TARGET}\", \"head\":\"${SOURCE}\", \"body\":\"${BODY}\"}"
+    DATA="{\"base\":${TARGET}, \"head\":${SOURCE}, \"body\":${BODY}}"
     RESPONSE=$(curl -sSL -H "${AUTH_HEADER}" -H "${HEADER}" --user "${GITHUB_ACTOR}" -X GET --data "${DATA}" ${PULLS_URL})
     PR=$(echo "${RESPONSE}" | jq --raw-output '.[] | .head.ref')
     echo "Response ref: ${PR}"
@@ -64,7 +71,7 @@ create_pull_request() {
     # Option 2: Open a new pull request
     else
         # Post the pull request
-        DATA="{\"title\":\"${TITLE}\", \"body\":\"${BODY}\", \"base\":\"${TARGET}\", \"head\":\"${SOURCE}\", \"draft\":\"${DRAFT}\"}"
+        DATA="{\"title\":${TITLE}, \"body\":${BODY}, \"base\":${TARGET}, \"head\":${SOURCE}, \"draft\":${DRAFT}}"
         echo "curl --user ${GITHUB_ACTOR} -X POST --data ${DATA} ${PULLS_URL}"
         curl -sSL -H "${AUTH_HEADER}" -H "${HEADER}" --user "${GITHUB_ACTOR}" -X POST --data "${DATA}" ${PULLS_URL}
         echo $?
