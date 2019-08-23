@@ -45,13 +45,13 @@ check_events_json() {
 create_pull_request() {
 
     # JSON strings
-    SOURCE="$(echo "${1}" | jq --raw-input --slurp ".")"  # from this branch
-    TARGET="$(echo "${2}" | jq --raw-input --slurp ".")"  # pull request TO this target
-    BODY="$(echo "${3}" | jq --raw-input --slurp ".")"    # this is the content of the message
-    TITLE="$(echo "${4}" | jq --raw-input --slurp ".")"   # pull request title
+    SOURCE="$(echo "${1}" | head -n 1 | jq --raw-input ".")"          # from this branch
+    TARGET="$(echo "${2}" | head -n 1 | jq --raw-input --slurp ".")"  # pull request TO this target
+    BODY="$(echo -n "${3}" | jq --raw-input --slurp ".")"             # this is the content of the message
+    TITLE="$(echo "${4}" | head -n 1 | jq --raw-input --slurp ".")"   # pull request title
     
     # JSON boolean
-    if [[ "${5}" ==  "true" ]]; then                  # if PRs are draft
+    if [[ "${5}" ==  "true" ]]; then                                  # if PRs are draft
       DRAFT="true";
     else
       DRAFT="false";
